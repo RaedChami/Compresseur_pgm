@@ -5,8 +5,8 @@
 **L'éxecution du projet**  
 - La compilation se fait à travers un makefile. Pour éxecuter le projet, donner en argument le nom du fichier PGM à traiter.
 
-** A implémenter :  
-*Partie 1 :*  
-- Construction de la matrice pixmap stockant les données d'un fichier PGM
-*Partie 2 :*
-- Quadtree 
+** A implémenter :**  
+- *Partie 1 :*
+  Construction de la matrice pixmap stockant les données d'un fichier PGM
+- *Partie 2 :*  
+  Quadtree 
