@@ -7,6 +7,6 @@
 
 **A implémenter :**  
 - *Partie 1 :*
-  Construction de la matrice pixmap stockant les données d'un fichier PGM
+  Construction de la matrice pixmap stockant les données d'un fichier PGM **(en cours)**
 - *Partie 2 :*
   Quadtree 
