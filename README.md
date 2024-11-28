@@ -5,7 +5,7 @@
 ## Guide développeur :  
 **L'éxecution du projet**  
 - La compilation se fait à travers un makefile. Pour éxecuter le projet, donner en argument le nom du fichier PGM à traiter :
-```./test PGM/boat.512.pgm```
+  ```./test PGM/boat.512.pgm```
 
 **A implémenter :**  
 - *Partie 1 :*
