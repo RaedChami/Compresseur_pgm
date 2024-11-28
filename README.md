@@ -13,3 +13,5 @@
   Lecture de fichier (COMPLETE)
 - *Partie 2 :*
   Quadtree (EN COURS)
+- *Partie 3 :*
+  Compression de l'image
