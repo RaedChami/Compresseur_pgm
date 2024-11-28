@@ -1,11 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int lire_fichier(const char *filename, int *nbc, int *nbl, int *nbg) {
+unsigned char** construit_pixmap(int nbc, int nbl) {
     /**
-     * @brief Fonction de lecture de fichiers de type PGM
+     * @brief Alloue la mémoire pour la création d'une pixmap.
+     * @param nbc Nombre de colonnes du fichier PGM
+     * @param nbl Nombre de lignes du fichier PGM
+     * @return Renvoie une pixmap correspondant aux dimensions en paramètres 
+     */
+    unsigned char** pixmap = (unsigned char**)malloc(nbl * sizeof(unsigned char*));      // Allocation de mémoire pour la matrice de pixels
+    unsigned char* pixels = (unsigned char*)malloc(nbl * nbc * sizeof(unsigned char));   // Allocation de mémoire pour pixels de la matrice
+    
+    if (!pixmap || !pixels) {
+        return NULL;
+    }
+    for(int i = 0; i < nbl; i++) {
+        pixmap[i] = pixels + (i * nbc);
+    }
+
+    return pixmap;
+}
+
+void liberer_image(unsigned char** pixmap) {
+    /**
+     * @brief Libère la mémoire d'une pixmap.
+     * @param pixmap Matrice de pixels d'un fichier PGM
+     */
+    if (pixmap) {
+        free(pixmap[0]); 
+        free(pixmap);    
+    }
+}
+
+int lire_fichier(const char *filename, int *nbc, int *nbl, int *nbg, unsigned char ***pixmap) {
+    /**
+     * @brief Fonction de lecture de fichier de type PGM.
      * @param filename Nom du fichier PGM
-     * @return Valeur de retour de type entier
+     * @param nbc Nombre de colonnes du fichier PGM
+     * @param nbl Nombre de lignes du fichier PGM
+     * @param pixmap Matrice de pixels du fichier PGM
+     * @return Valeur de retour numérique
      */
     FILE *f = fopen(filename, "r");
     char line[1024];
@@ -24,21 +58,23 @@ int lire_fichier(const char *filename, int *nbc, int *nbl, int *nbg) {
         if (line[0] == '#') continue;  // Ignore les commentaires
         
         if (sscanf(line, "%d %d %d", nbc, nbl, nbg) == 3) {   // Identifie les dimensions de l'image et le niveau de gris écrites sur une ligne
-            fclose(f);
-            return 1;
+            break;
         }
         
         if (sscanf(line, "%d %d", nbc, nbl) == 2) {     // Identifie les dimensions de l'image et le niveau de gris écrites sur deux lignes
             if (fgets(line, sizeof(line), f)) {
                 if (sscanf(line, "%d", nbg) == 1) {
-                    fclose(f);
-                    return 1;
+                    break;
                 }
             }
         }
     }    
+
+    *pixmap = construit_pixmap(*nbc, *nbl);
+    fread((*pixmap)[0], 1, (*nbc) * (*nbl), f);
+    
     fclose(f);
-    return -1;
+    return 1;
 }
 
 void getDimensions(int nbc, int nbl) {
