@@ -71,7 +71,7 @@ int lire_fichier(const char *filename, int *nbc, int *nbl, int *nbg, unsigned ch
     }    
 
     *pixmap = construit_pixmap(*nbc, *nbl);
-    fread((*pixmap)[0], 1, (*nbc) * (*nbl), f);
+    fread((*pixmap)[0], 1, (*nbc) * (*nbl), f); // Lis les données binaires du fichier PGM dans une pixmap.
     
     fclose(f);
     return 1;
