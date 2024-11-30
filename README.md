@@ -17,5 +17,5 @@
   Compression de l'image sans pertes
 - *Partie 4 :*
   Decompression de l'image
-- Partie 5 :*
+- *Partie 5 :*
   Compression de l'image avec pertes
