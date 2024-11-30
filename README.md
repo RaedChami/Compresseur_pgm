@@ -14,4 +14,8 @@
 - *Partie 2 :*
   Quadtree (EN COURS)
 - *Partie 3 :*
-  Compression de l'image
+  Compression de l'image sans pertes
+- *Partie 4 :*
+  Decompression de l'image
+- Partie 5 :*
+  Compression de l'image avec pertes
