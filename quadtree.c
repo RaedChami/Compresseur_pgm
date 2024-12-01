@@ -13,6 +13,7 @@ typedef struct Noeud {
 
 Noeud *alloue_noeud(unsigned char valeur, unsigned char erreur, bool uniforme) {
     Noeud *noeud = malloc(sizeof(Noeud));
+    if (!noeud) return NULL;
     noeud->valeur = valeur;
     noeud->e = erreur;
     noeud->u = uniforme;
