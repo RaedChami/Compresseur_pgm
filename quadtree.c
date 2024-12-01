@@ -3,8 +3,8 @@
 
 typedef struct Noeud {
     unsigned char valeur;
-    unsigned char e;    
-    bool u;            
+    unsigned char e;    // Valeur d'erreur
+    bool u;             // Bit d'uniformité       
     struct Noeud *premier;        
     struct Noeud *second;         
     struct Noeud *troisieme;         
