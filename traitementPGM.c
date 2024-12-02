@@ -1,38 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-unsigned char** construit_pixmap(int nbc, int nbl) {
+unsigned char* construit_pixmap(int nbc, int nbl) {
     /**
-     * @brief Alloue la mémoire pour la création d'une pixmap.
+     * @brief Alloue la mémoire pour la création d'une pixmap qui contient les intensités des pixels d'un fichier.
      * @param nbc Nombre de colonnes du fichier PGM
      * @param nbl Nombre de lignes du fichier PGM
-     * @return Renvoie une pixmap correspondant aux dimensions en paramètres 
+     * @return Renvoie une pixmap représentant les pixels du fichier.
      */
-    unsigned char** pixmap = (unsigned char**)malloc(nbl * sizeof(unsigned char*));      // Allocation de mémoire pour la matrice de pixels
-    unsigned char* pixels = (unsigned char*)malloc(nbl * nbc * sizeof(unsigned char));   // Allocation de mémoire pour pixels de la matrice
-    
-    if (!pixmap || !pixels) {
+    unsigned char* pixmap = (unsigned char*)malloc(nbl * nbc * sizeof(unsigned char));   // Allocation de mémoire pour pixels de la matrice
+    if (!pixmap) {
         return NULL;
     }
-    for(int i = 0; i < nbl; i++) {
-        pixmap[i] = pixels + (i * nbc);
-    }
-
     return pixmap;
 }
 
-void liberer_image(unsigned char** pixmap) {
-    /**
-     * @brief Libère la mémoire d'une pixmap.
-     * @param pixmap Matrice de pixels d'un fichier PGM
-     */
-    if (pixmap) {
-        free(pixmap[0]); 
-        free(pixmap);    
-    }
-}
-
-int lire_fichier(const char *filename, int *nbc, int *nbl, int *nbg, unsigned char ***pixmap) {
+int lire_fichier(const char *filename, int *nbc, int *nbl, int *nbg, unsigned char **pixmap) {
     /**
      * @brief Fonction de lecture de fichier de type PGM.
      * @param filename Nom du fichier PGM
@@ -71,7 +54,11 @@ int lire_fichier(const char *filename, int *nbc, int *nbl, int *nbg, unsigned ch
     }    
 
     *pixmap = construit_pixmap(*nbc, *nbl);
-    fread((*pixmap)[0], 1, (*nbc) * (*nbl), f); // Lis les données binaires du fichier PGM dans une pixmap.
+    if (!*pixmap) {
+        fclose(f);
+        return -1;
+    }  
+    fread(*pixmap, 1, (*nbc) * (*nbl), f); // Lis les données binaires du fichier PGM dans une pixmap.
     
     fclose(f);
     return 1;
