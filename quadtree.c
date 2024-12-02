@@ -23,3 +23,13 @@ Noeud *alloue_noeud(unsigned char valeur, unsigned char erreur, bool uniforme) {
     noeud->quatrieme = NULL;
     return noeud;
 }
+
+unsigned char calcule_erreur(unsigned char *valeurs) {
+    /**
+     * @brief Calcule la valeur d'erreur du noeud.
+     * @param valeurs Valeurs des noeuds
+     * @return Renvoie valeur d'erreur du noeud
+     */
+    int somme = valeurs[0] + valeurs[1] + valeurs[2] + valeurs[3];
+    return somme % 4;
+}
