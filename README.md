@@ -12,10 +12,10 @@
 - *Partie 1 :*
   Lecture de fichier (COMPLETE)
 - *Partie 2 :*
-  Quadtree (EN COURS)
+  Quadtree (COMPLETE)
 - *Partie 3 :*
-  Compression de l'image sans pertes
+  Compression de l'image sans pertes (EN COURS)
 - *Partie 4 :*
-  Decompression de l'image
+  Decompression de l'image (EN COURS)
 - *Partie 5 :*
   Compression de l'image avec pertes
