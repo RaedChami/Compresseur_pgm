@@ -1,15 +1,18 @@
 CC = gcc
-CFLAGS = -std=c17 -Wall -Wfatal-errors
-SRCS = main.c traitementPGM.c
-TARGET = test
+CFLAGS = -std=c17 -Wall -Wfatal-errors -I$(INCLUDE_DIR)
+SRC_DIR = src
+INCLUDE_DIR = include
+TARGET = projet
+
+SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/traitementPGM.c $(SRC_DIR)/quadtree.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET)
+	$(CC) $(CFLAGS) $(OBJS) -o $@
 
-%.o: %.c
+$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: all clean
