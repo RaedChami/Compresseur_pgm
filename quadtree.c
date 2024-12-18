@@ -63,19 +63,3 @@ Noeud *construire_quadtree(unsigned char *pixels, int largeur, int hauteur, int 
 
     return noeud_parent;
 }
-
-void afficher_quadtree(Noeud *noeud, int niveau) {
-    if (!noeud) {
-        return;
-    }
-    for (int i = 0; i < niveau; i++) {
-        printf("  ");
-    }
-
-    printf("Niveau %d - Valeur: %d, Uniforme: %s, Erreur: %d\n", niveau, noeud->valeur, noeud->u ? "Oui" : "Non", noeud->e);
-
-    afficher_quadtree(noeud->premier, niveau + 1);
-    afficher_quadtree(noeud->second, niveau + 1);
-    afficher_quadtree(noeud->troisieme, niveau + 1);
-    afficher_quadtree(noeud->quatrieme, niveau + 1);
-}
