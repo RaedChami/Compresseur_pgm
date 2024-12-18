@@ -41,8 +41,8 @@ Noeud *construire_quadtree(unsigned char *pixels, int largeur, int hauteur, int 
     // Divise le bloc de pixels actuel en quatre voisins
     Noeud *premier = construire_quadtree(pixels, largeur, hauteur, x, y, taille / 2);
     Noeud *second = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y, taille / 2);
-    Noeud *troisieme = construire_quadtree(pixels, largeur, hauteur, x, y + taille / 2, taille / 2);
-    Noeud *quatrieme = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y + taille / 2, taille / 2);
+    Noeud *troisieme = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y + taille / 2, taille / 2);
+    Noeud *quatrieme = construire_quadtree(pixels, largeur, hauteur, x, y + taille / 2, taille / 2);
 
     bool uniforme = false;
 
