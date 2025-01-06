@@ -2,9 +2,9 @@ CC = gcc
 CFLAGS = -std=c17 -Wall -Wfatal-errors -I$(INCLUDE_DIR)
 SRC_DIR = src
 INCLUDE_DIR = include
-TARGET = projet
+TARGET = codec
 
-SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/traitementPGM.c $(SRC_DIR)/quadtree.c
+SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/traitementPGM.c $(SRC_DIR)/quadtree.c $(SRC_DIR)/compress.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
