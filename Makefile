@@ -4,7 +4,7 @@ SRC_DIR = src
 INCLUDE_DIR = include
 TARGET = codec
 
-SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/traitementPGM.c $(SRC_DIR)/quadtree.c $(SRC_DIR)/compress.c
+SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/traitementPGM.c $(SRC_DIR)/quadtree.c $(SRC_DIR)/compress.c $(SRC_DIR)/bit_writer.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
