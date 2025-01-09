@@ -4,11 +4,10 @@
 #include <getopt.h>
 #include "treat_pgm_file.h"
 #include "quadtree.h"
-#include "bit_writer.h"
 
-void affichage_aide() {
+void display_help() {
     /**
-     * @brief Affiche la page d'aide.
+     * @brief Displays the help panel
      * 
      */
     printf("Usage: ./codec [options]\n");
@@ -22,19 +21,19 @@ void affichage_aide() {
     printf("  -v                        Mode bavard\n");
 }
 
-void parser_arguments(int argc, char *argv[], int *mode_encodeur, int *mode_decodeur, char **input_file, char **output_file, int *grille_segmentation, int *verbose) {
+void parse_arguments(int argc, char *argv[], int *encoding_mode, int *decoding_mode, char **input_file, char **output_file, int *segmentation_grid, int *verbose) {
     /**
-     * @brief Extrait les options entrés en argument par l'utilisateur.
+     * @brief Parses command-line arguments
      * 
      */
     int opt;
     while ((opt = getopt(argc, argv, "hcui:o:gv")) != -1) {
         switch (opt) {
             case 'c':
-                *mode_encodeur = 1;
+                *encoding_mode = 1;
                 break;
             case 'u':
-                *mode_decodeur = 1;
+                *decoding_mode = 1;
                 break;
             case 'i':
                 *input_file = optarg;
@@ -43,74 +42,95 @@ void parser_arguments(int argc, char *argv[], int *mode_encodeur, int *mode_deco
                 *output_file = optarg;
                 break;
             case 'g':
-                *grille_segmentation = 1;
+                *segmentation_grid = 1;
                 break;
             case 'v':
                 *verbose = 1;
                 break;
             case 'h':
-                affichage_aide();
+                display_help();
                 exit(0);
             default:
-                affichage_aide();
+                display_help();
                 exit(1);
         }
     }
 }
 
-void verifier_options(int mode_encodeur, int mode_decodeur, const char *input_file) {
+void validate_options(int encoding_mode, int decoding_mode, const char *input_file) {
     /**
-     * @brief Vérifie l'option spécifiée par l'utilisateur
+     * @brief Validates options specified by user
      * 
-     * @param mode_encodeur Flag mode encodeur
-     * @param mode_decodeur Flag mode decodeur
-     * @param input_file Fichier d'entrée
+     * @param encoding_mode Encoder mode flag
+     * @param decoding_mode Decoder mode flag
+     * @param input_file Input file
      */
-    if (mode_encodeur && mode_decodeur) {
-        fprintf(stderr, "Erreur: les options -c et -u sont mutuellement exclusives.\n");
+    if (encoding_mode && decoding_mode) {
+        fprintf(stderr, "Erreur: Impossible d'activer l'encodeur et le décodeur en même temps\n");
         exit(1);
     }
 
     if (!input_file) {
-        fprintf(stderr, "Erreur: le fichier d'entrée doit être spécifié avec -i.\n");
+        fprintf(stderr, "Erreur: le fichier d'entrée doit être spécifié avec -i\n");
         exit(1);
     }
 }
 
-void determiner_fichier_sortie(int mode_encodeur, int mode_decodeur, char **output_file) {
+void determine_output_file(int encoding_mode, int decoding_mode, char **output_file) {
     /**
-     * @brief Determine le fichier de sortie
+     * @brief Determines the output file based on the mode.
      * 
-     * @param mode_encodeur Flag mode encodeur
-     * @param mode_decodeur Flag mode decodeur
-     * @param output_file Fichier de sortie 
+     * @param encoding_mode Encoder mode flag
+     * @param decoding_mode Decoder mode flag
+     * @param input_file Input file
      */
     if (!*output_file) {
-        if (mode_encodeur) {
+        if (encoding_mode) {
             *output_file = "QTC/out.qtc";
-        } else if (mode_decodeur) {
+        } else if (decoding_mode) {
             *output_file = "PGM/out.pgm";
         }
     }
 }
 
-void encoder(const char *input_file, const char *output_file, int verbose) {
+/*
+    Fonction DEBUG 
+*/
+void display_info(int verbose, int encoding_mode, const char *input_file, const char *output_file, int segmentation_grid, int nbc, int nbl, int nbg, const unsigned char *image) {
+    if (verbose) {
+        printf("Mode: %s\n", encoding_mode ? "Encodeur" : "Decodeur");
+        printf("Fichier d'entrée: %s\n", input_file);
+        printf("Fichier de sortie: %s\n", output_file);
+        printf("Grille de segmentation: %s\n", segmentation_grid ? "Oui" : "Non");
+        printf("Dimensions : %d %d\n", nbc, nbl);
+        printf("Niveau de Gris : %d\n", nbg);
+        printf("Premiers pixels de l'image :\n");
+        for (int i = 0; i < 20 && i < nbc * nbl; i++) {
+            printf("%d ", image[i]);
+        }
+        printf("\n");
+    }
+}
+
+void encode(const char *input_file, const char *output_file, int verbose) {
     /**
-     * @brief Compresse l'image fournie.
+     * @brief Compresses the provided PGM image into a QTC file
      * 
+     * @param input_file   PGM file to be compressed
+     * @param output_file   Compressed QTC file
      */
     unsigned char *image = NULL;
     int nbc, nbl, nbg;
     
-    if (lire_fichier(input_file, &nbc, &nbl, &nbg, &image) != 1) {
+    if (read_pgm_file(input_file, &nbc, &nbl, &nbg, &image) != 1) {
         fprintf(stderr, "Erreur de lecture du fichier\n");
         exit(1);
     }
     
-    Noeud *quadtree = construire_quadtree(image, nbc, nbl, 0, 0, nbc);
+    Node *quadtree = build_quadtree(image, nbc, nbl, 0, 0, nbc);
     if (verbose) {
-        afficher_premiers_pixels(image, nbc, nbl);  // Affiche les premiers pixels pour vérification *****DEBUG******
-        afficher_quadtree(quadtree, 0);
+        afficher_premiers_pixels(image, nbc, nbl); 
+        display_quadtree(quadtree, 0);
     }
     
     FILE *f_out = fopen(output_file, "w");
@@ -120,36 +140,40 @@ void encoder(const char *input_file, const char *output_file, int verbose) {
         exit(1);
     }
     
-    printf("Compression de %s vers %s\n", input_file, output_file);
-
     fclose(f_out);
     free(image);
 }
 
-void decoder(const char *input_file, const char *output_file) {
+void decode(const char *input_file, const char *output_file) {
     /**
-     * @brief Décompresse l'image fournie.
+     * @brief Decompresses the provided QTC file into a PGM file
      * 
+     * @param input_file Compressed QTC file
+     * @param output_file PGM file
      */
     printf("Décompression de %s vers %s\n", input_file, output_file);
+    if (lire_fichier_qtc(input_file) != 1) {
+        fprintf(stderr, "Erreur de lecture du fichier\n");
+        exit(1);
+    }
 }
 
 int main(int argc, char *argv[]) {
-    int mode_encodeur = 0;
-    int mode_decodeur = 0;
+    int encoding_mode = 0;
+    int decoding_mode = 0;
     char *input_file = NULL;
     char *output_file = NULL;
-    int grille_segmentation = 0;
+    int segmentation_grid = 0;
     int verbose = 0;
 
-    parser_arguments(argc, argv, &mode_encodeur, &mode_decodeur, &input_file, &output_file, &grille_segmentation, &verbose);
-    verifier_options(mode_encodeur, mode_decodeur, input_file);
-    determiner_fichier_sortie(mode_encodeur, mode_decodeur, &output_file);
+    parse_arguments(argc, argv, &encoding_mode, &decoding_mode, &input_file, &output_file, &segmentation_grid, &verbose);
+    validate_options(encoding_mode, decoding_mode, input_file);
+    determine_output_file(encoding_mode, decoding_mode, &output_file);
 
-    if (mode_encodeur) {
-        encoder(input_file, output_file, verbose);
-    } else if (mode_decodeur) {
-        decoder(input_file, output_file);
+    if (encoding_mode) {
+        encode(input_file, output_file, verbose);
+    } else if (decoding_mode) {
+        decode(input_file, output_file);
     }
 
     return 0;
