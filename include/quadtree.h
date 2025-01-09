@@ -4,15 +4,16 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-typedef struct Noeud {
-    unsigned char valeur;  
-    unsigned char e;    // Valeur d'erreur
-    bool u;             // Bit d'uniformité       
-    struct Noeud *fils[4];  // fils          
-} Noeud, *Quadtree;
+typedef struct Node {
+    unsigned char value;  
+    unsigned char e;    // Error value
+    bool u;             // Uniformity bit       
+    struct Node *childs[4];  // Childs          
+} Node, *Quadtree;
 
-Noeud *alloue_noeud(unsigned char valeur, unsigned char erreur, bool uniforme);
-Noeud *construire_quadtree(unsigned char *pixels, int largeur, int hauteur, int x, int y, int taille);
-void afficher_quadtree(Noeud *noeud, int niveau);
+Node *allocate_node(unsigned char value, unsigned char error, bool uniform);
+Node *build_quadtree(unsigned char *pixels, int width, int height, int x, int y, int size);
+void display_quadtree(Node *node, int level);
+int get_quadtree_depth(Node *node);
 
-#endif
+#endif 
