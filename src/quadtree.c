@@ -3,75 +3,99 @@
 #include <stdbool.h>
 #include "quadtree.h"
 
-Noeud *alloue_noeud(unsigned char valeur, unsigned char erreur, bool _uniforme) {
+Node *allocate_node(unsigned char new_value, unsigned char error, bool _uniform) {
     /**
-     * @brief Alloue un noeud pour le Quadtree.
-     * @param valeur Valeur d'intensité du noeud
-     * @param erreur Valeur d'erreur du noeud
-     * @param uniforme Bit d'uniformité du noeud
-     * @return Renvoie un noeud du Quadtree
+     * @brief Allocates a node for the quadtree.
+     * @param new_value Average of intensity
+     * @param error Epsilon/Error value
+     * @param _uniform Bit of uniformity
      */
-    Noeud *noeud = (Noeud*)malloc(sizeof(Noeud));
-    if (!noeud) return NULL;
-    noeud->valeur = valeur;
-    noeud->e = erreur;
-    noeud->u = _uniforme;
+    Node *node = (Node*)malloc(sizeof(Node));
+    if (!node) return NULL;
+    node->value = new_value;
+    node->e = error;
+    node->u = _uniform;
     for(int i = 0; i < 4; i++) {
-        noeud->fils[i] = NULL;
+        node->childs[i] = NULL;
     }
-    return noeud;
+    return node;
 }
 
-Noeud *construire_quadtree(unsigned char *pixels, int largeur, int hauteur, int x, int y, int taille) {
+Node *build_quadtree(unsigned char *pixels, int width, int height, int x, int y, int size) {
     /**
-     * @brief Construit le quadtree d'une image.
-     * @param pixels Matrice de pixels
-     * @param largeur Nombre de colonnes de l'image
-     * @param hauteur Nombre de lignes de l'image
-     * @param x Coordonnée x du pixel
-     * @param y Coordonnée y du pixel
-     * @param taille Taille du bloc de pixels
-     * @return Renvoie noeud parent représentant le bloc de pixels
+     * @brief Builds a quadtree representing the pixels of an image.
+     * @param pixels Pixmap
+     * @param width Number of columns
+     * @param height Number of lines
+     * @param x X coordinate of pixel
+     * @param y Y coordinate of pixel
+     * @param size Size of block of pixels
      */
-    bool _uniforme = false;
+    bool _uniform = false;
 
-    if (taille == 1) {     
-        return alloue_noeud(pixels[x + y * largeur], 0, true);    // Crée un noeud terminal
+    if (size == 1) {     
+        return allocate_node(pixels[x + y * width], 0, true);    // Creates a terminal node
     }
 
-    // Divise le bloc de pixels en quatre voisins
-    Noeud *fils[4];
-    fils[0] = construire_quadtree(pixels, largeur, hauteur, x, y, taille / 2);
-    fils[1] = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y, taille / 2);
-    fils[2] = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y + taille / 2, taille / 2);
-    fils[3] = construire_quadtree(pixels, largeur, hauteur, x, y + taille / 2, taille / 2);
+    // Divides a block of pixels into four childs.
+    Node *childs[4];
+    childs[0] = build_quadtree(pixels, width, height, x, y, size / 2);
+    childs[1] = build_quadtree(pixels, width, height, x + size / 2, y, size / 2);
+    childs[2] = build_quadtree(pixels, width, height, x + size / 2, y + size / 2, size / 2);
+    childs[3] = build_quadtree(pixels, width, height, x, y + size / 2, size / 2);
 
-    unsigned char valeurs[4] = {fils[0]->valeur, fils[1]->valeur, fils[2]->valeur, fils[3]->valeur};
-    unsigned char moyenne = (valeurs[0] + valeurs[1] + valeurs[2] + valeurs[3]) / 4;
-    unsigned char erreur = (valeurs[0] + valeurs[1] + valeurs[2] + valeurs[3]) % 4;
-    if (!erreur) {        // Codage du bit d'uniformité lorsque e = 0
-        _uniforme = ((fils[0]->u && fils[1]->u && fils[2]->u && fils[3]->u) && (fils[0]->valeur == fils[1]->valeur && fils[0]->valeur == fils[2]->valeur && fils[0]->valeur == fils[3]->valeur));  
+    unsigned char values[4] = {childs[0]->value, childs[1]->value, childs[2]->value, childs[3]->value};
+    unsigned char average = (values[0] + values[1] + values[2] + values[3]) / 4;
+    unsigned char epsilon = (values[0] + values[1] + values[2] + values[3]) % 4;
+    if (!epsilon) {        // bit coding of uniformity when epsilon = 0
+        _uniform = ((childs[0]->u && childs[1]->u && childs[2]->u && childs[3]->u) && (childs[0]->value == childs[1]->value && childs[0]->value == childs[2]->value && childs[0]->value == childs[3]->value));  
     }
 
-    Noeud *noeud_parent = alloue_noeud(moyenne, erreur, _uniforme);
-    if (noeud_parent) {
+    Node *parent_node = allocate_node(average, epsilon, _uniform);
+    if (parent_node) {
         for (int i = 0; i < 4; i++) {
-            noeud_parent->fils[i] = fils[i];
+            parent_node->childs[i] = childs[i];
         }
     }
 
-    return noeud_parent;
+    return parent_node;
 }
 
-void afficher_quadtree(Noeud *noeud, int niveau) {
-    if (!noeud) {
+void display_quadtree(Node *node, int level) {
+    /**
+     * @brief Simple display of the entire quadtree.
+     * 
+     * @param node Node of quadtree
+     * @param level Level of quadtree
+     */
+    if (!node) {
         return;
     }
-    for (int i = 0; i < niveau; i++) {
+    for (int i = 0; i < level; i++) {
         printf("  ");
     }
-    printf("Niveau %d --- m: %d, u: %s, e: %d\n", niveau, noeud->valeur, noeud->u ? "oui" : "non", noeud->e);
+    printf("Niveau %d --- m: %d, u: %s, e: %d\n", level, node->value, node->u ? "oui" : "non", node->e);
     for (int i = 0; i < 4; i++) {
-        afficher_quadtree(noeud->fils[i], niveau + 1);
+        display_quadtree(node->childs[i], level + 1);
     }
+}
+
+int get_quadtree_depth(Node *node) {
+    /**
+     * @brief Getter of the depth of the quadtree.
+     * Determines and returns the depth of the quadtree
+     * 
+     * @param node Node of quadtree
+     */
+    if (!node) {
+        return 0; 
+    }
+    int max_depth = 0;
+    for (int i = 0; i < 4; i++) {
+        int child_depth = get_quadtree_depth(node->childs[i]);
+        if (child_depth > max_depth) {
+            max_depth = child_depth;
+        }
+    }
+    return 1 + max_depth;
 }
