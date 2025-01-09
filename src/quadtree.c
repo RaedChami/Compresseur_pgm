@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include "quadtree.h"
 
-Noeud *alloue_noeud(unsigned char valeur, unsigned char erreur, bool uniforme) {
+Noeud *alloue_noeud(unsigned char valeur, unsigned char erreur, bool _uniforme) {
     /**
      * @brief Alloue un noeud pour le Quadtree.
      * @param valeur Valeur d'intensité du noeud
@@ -15,11 +15,10 @@ Noeud *alloue_noeud(unsigned char valeur, unsigned char erreur, bool uniforme) {
     if (!noeud) return NULL;
     noeud->valeur = valeur;
     noeud->e = erreur;
-    noeud->u = uniforme;
-    noeud->premier = NULL;
-    noeud->second = NULL;
-    noeud->troisieme = NULL;
-    noeud->quatrieme = NULL;
+    noeud->u = _uniforme;
+    for(int i = 0; i < 4; i++) {
+        noeud->fils[i] = NULL;
+    }
     return noeud;
 }
 
@@ -34,31 +33,31 @@ Noeud *construire_quadtree(unsigned char *pixels, int largeur, int hauteur, int 
      * @param taille Taille du bloc de pixels
      * @return Renvoie noeud parent représentant le bloc de pixels
      */
+    bool _uniforme = false;
+
     if (taille == 1) {     
         return alloue_noeud(pixels[x + y * largeur], 0, true);    // Crée un noeud terminal
     }
 
-    // Divise le bloc de pixels actuel en quatre voisins
-    Noeud *premier = construire_quadtree(pixels, largeur, hauteur, x, y, taille / 2);
-    Noeud *second = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y, taille / 2);
-    Noeud *troisieme = construire_quadtree(pixels, largeur, hauteur, x, y + taille / 2, taille / 2);
-    Noeud *quatrieme = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y + taille / 2, taille / 2);
+    // Divise le bloc de pixels en quatre voisins
+    Noeud *fils[4];
+    fils[0] = construire_quadtree(pixels, largeur, hauteur, x, y, taille / 2);
+    fils[1] = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y, taille / 2);
+    fils[2] = construire_quadtree(pixels, largeur, hauteur, x + taille / 2, y + taille / 2, taille / 2);
+    fils[3] = construire_quadtree(pixels, largeur, hauteur, x, y + taille / 2, taille / 2);
 
-    bool uniforme = false;
-
-    unsigned char valeurs[4] = {premier->valeur, second->valeur, troisieme->valeur, quatrieme->valeur};
+    unsigned char valeurs[4] = {fils[0]->valeur, fils[1]->valeur, fils[2]->valeur, fils[3]->valeur};
     unsigned char moyenne = (valeurs[0] + valeurs[1] + valeurs[2] + valeurs[3]) / 4;
     unsigned char erreur = (valeurs[0] + valeurs[1] + valeurs[2] + valeurs[3]) % 4;
     if (!erreur) {        // Codage du bit d'uniformité lorsque e = 0
-        uniforme = ((premier->u && second->u && troisieme->u && quatrieme->u) && (premier->valeur == second->valeur && premier->valeur == troisieme->valeur && premier->valeur == quatrieme->valeur));  
+        _uniforme = ((fils[0]->u && fils[1]->u && fils[2]->u && fils[3]->u) && (fils[0]->valeur == fils[1]->valeur && fils[0]->valeur == fils[2]->valeur && fils[0]->valeur == fils[3]->valeur));  
     }
 
-    Noeud *noeud_parent = alloue_noeud(moyenne, erreur, uniforme);
+    Noeud *noeud_parent = alloue_noeud(moyenne, erreur, _uniforme);
     if (noeud_parent) {
-        noeud_parent->premier = premier;
-        noeud_parent->second = second;
-        noeud_parent->troisieme = troisieme;
-        noeud_parent->quatrieme = quatrieme;
+        for (int i = 0; i < 4; i++) {
+            noeud_parent->fils[i] = fils[i];
+        }
     }
 
     return noeud_parent;
@@ -71,11 +70,8 @@ void afficher_quadtree(Noeud *noeud, int niveau) {
     for (int i = 0; i < niveau; i++) {
         printf("  ");
     }
-
-    printf("Niveau %d - Valeur: %d, Uniforme: %s, Erreur: %d\n", niveau, noeud->valeur, noeud->u ? "Oui" : "Non", noeud->e);
-
-    afficher_quadtree(noeud->premier, niveau + 1);
-    afficher_quadtree(noeud->second, niveau + 1);
-    afficher_quadtree(noeud->troisieme, niveau + 1);
-    afficher_quadtree(noeud->quatrieme, niveau + 1);
+    printf("Niveau %d --- m: %d, u: %s, e: %d\n", niveau, noeud->valeur, noeud->u ? "oui" : "non", noeud->e);
+    for (int i = 0; i < 4; i++) {
+        afficher_quadtree(noeud->fils[i], niveau + 1);
+    }
 }
