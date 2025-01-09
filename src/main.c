@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "traitementPGM.h"
+#include <unistd.h>
+#include <getopt.h>
+#include "treat_pgm_file.h"
 #include "quadtree.h"
+#include "bit_writer.h"
 
 void affichage_aide() {
     /**
@@ -25,28 +27,33 @@ void parser_arguments(int argc, char *argv[], int *mode_encodeur, int *mode_deco
      * @brief Extrait les options entrés en argument par l'utilisateur.
      * 
      */
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-c") == 0) {
-            *mode_encodeur = 1;
-        } else if (strcmp(argv[i], "-u") == 0) {
-            *mode_decodeur = 1;
-        } else if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) {
-            *input_file = argv[i + 1];
-            i++;  
-        } else if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
-            *output_file = argv[i + 1];
-            i++;  
-        } else if (strcmp(argv[i], "-g") == 0) {
-            *grille_segmentation = 1;
-        } else if (strcmp(argv[i], "-h") == 0) {
-            affichage_aide();
-            exit(0);
-        } else if (strcmp(argv[i], "-v") == 0) {
-            *verbose = 1;
-        } else {
-            fprintf(stderr, "Option inconnue: %s\n", argv[i]);
-            affichage_aide();
-            exit(1);
+    int opt;
+    while ((opt = getopt(argc, argv, "hcui:o:gv")) != -1) {
+        switch (opt) {
+            case 'c':
+                *mode_encodeur = 1;
+                break;
+            case 'u':
+                *mode_decodeur = 1;
+                break;
+            case 'i':
+                *input_file = optarg;
+                break;
+            case 'o':
+                *output_file = optarg;
+                break;
+            case 'g':
+                *grille_segmentation = 1;
+                break;
+            case 'v':
+                *verbose = 1;
+                break;
+            case 'h':
+                affichage_aide();
+                exit(0);
+            default:
+                affichage_aide();
+                exit(1);
         }
     }
 }
