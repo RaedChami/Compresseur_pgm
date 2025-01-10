@@ -4,6 +4,8 @@
 #include <getopt.h>
 #include "treat_pgm_file.h"
 #include "quadtree.h"
+#include "bit_writer.h"
+#include "compress.h"
 
 void display_help() {
     /**
@@ -133,14 +135,18 @@ void encode(const char *input_file, const char *output_file, int verbose) {
         display_quadtree(quadtree, 0);
     }
     
-    FILE *f_out = fopen(output_file, "w");
-    if (f_out == NULL) {
+    FILE *f = fopen(output_file, "w");
+    if (f == NULL) {
         fprintf(stderr, "Erreur d'ouverture du fichier de sortie\n");
         free(image);
         exit(1);
-    }
+    }    
     
-    fclose(f_out);
+    BitStream *bs = init_bit_stream(f);
+    printf("Compression de %s vers %s\n", input_file, output_file);
+    write_quadtree_data(f, quadtree, bs);
+    close_bit_stream(bs);
+    fclose(f);
     free(image);
 }
 
