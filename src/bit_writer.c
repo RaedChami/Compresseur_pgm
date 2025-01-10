@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "quadtree.h"
-#include "traitementPGM.h"
+#include "treat_pgm_file.h"
 #include "bit_writer.h"
 
 BitStream *init_bit_stream(FILE *file) {
@@ -32,13 +32,35 @@ void pushbits(BitStream *curr, unsigned char data, int nb_bits) {
     while (nb_bits > 0) {
         curr->buffer = (curr->buffer << 1) | ((data >> (nb_bits-1)) & 1);
         curr->bit_count++;        
-        if (curr->bit_count == 8) {
+        if (curr->bit_count == 8) { // Write if buffer full
             fwrite(&curr->buffer, 1, 1, curr->file);
             curr->buffer = 0;
             curr->bit_count = 0;
         }
         nb_bits--;
     }
+}
+
+unsigned char pullbits(BitStream *curr, int nb_bits) {
+    /**
+     * @brief Reads a specified number of bits from the stream
+     * 
+     * @param curr Pointer to the bit stream
+     * @param nb_bits Contains the number of bits to read
+     */
+    unsigned char res = 0;    
+    while (nb_bits > 0) {
+        if (curr->bit_count == 0) {
+            if (fread(&curr->buffer, 1, 1, curr->file) != 1) {
+                return 0;
+            }
+            curr->bit_count = 8;
+        }        
+        res = (res << 1) | ((curr->buffer >> (curr->bit_count - 1)) & 1);
+        curr->bit_count--;
+        nb_bits--;
+    }
+    return res;
 }
 
 void finalize_bit_stream(BitStream *curr) {
@@ -57,7 +79,7 @@ void finalize_bit_stream(BitStream *curr) {
 
 void close_bit_stream(BitStream *curr) {
     /**
-     * @brief Frees the bit stream.
+     * @brief Frees the bit stream
      * 
      * @param curr Pointer to the bit stream
      */
