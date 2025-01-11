@@ -114,13 +114,13 @@ void display_info(int verbose, int encoding_mode, const char *input_file, const 
     }
 }
 
+/**
+ * @brief Compresses the provided PGM image into a QTC file
+ * 
+ * @param input_file   PGM file to be compressed
+ * @param output_file   Compressed QTC file
+ */
 void encode(const char *input_file, const char *output_file, int verbose) {
-    /**
-     * @brief Compresses the provided PGM image into a QTC file
-     * 
-     * @param input_file   PGM file to be compressed
-     * @param output_file   Compressed QTC file
-     */
     unsigned char *image = NULL;
     int nbc, nbl, nbg;
     
@@ -130,21 +130,16 @@ void encode(const char *input_file, const char *output_file, int verbose) {
     }
     
     Node *quadtree = build_quadtree(image, nbc, nbl, 0, 0, nbc);
-    if (verbose) {
-        afficher_premiers_pixels(image, nbc, nbl); 
-        display_quadtree(quadtree, 0);
-    }
-    
+
     FILE *f = fopen(output_file, "w");
     if (f == NULL) {
         fprintf(stderr, "Erreur d'ouverture du fichier de sortie\n");
         free(image);
         exit(1);
     }    
-    
     BitStream *bs = init_bit_stream(f);
-    printf("Compression de %s vers %s\n", input_file, output_file);
-    write_quadtree_data(f, quadtree, bs);
+    write_quadtree_data(f, quadtree, bs, verbose);
+    printf("Compression de %s sauvegardée dans %s\n", input_file, output_file);
     close_bit_stream(bs);
     fclose(f);
     free(image);
