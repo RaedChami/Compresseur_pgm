@@ -1,5 +1,5 @@
-#ifndef BIT_WRITER_H
-#define BIT_WRITER_H
+#ifndef BIT_MANIPULATION_H
+#define BIT_MANIPULATION_H
 
 typedef struct {
     FILE *file;              
