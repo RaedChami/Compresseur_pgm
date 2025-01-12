@@ -4,14 +4,16 @@
 #include <getopt.h>
 #include "treat_pgm_file.h"
 #include "quadtree.h"
-#include "bit_writer.h"
+#include "bit_manipulation.h"
 #include "compress.h"
+#include "treat_qtc_file.h"
+#include "decompress.h"
 
+/**
+ * @brief Displays the help panel
+ * 
+ */
 void display_help() {
-    /**
-     * @brief Displays the help panel
-     * 
-     */
     printf("Usage: ./codec [options]\n");
     printf("Options:\n");
     printf("  -c                        Encoder l'image\n");
@@ -23,11 +25,11 @@ void display_help() {
     printf("  -v                        Mode bavard\n");
 }
 
+/**
+ * @brief Parses command-line arguments
+ * 
+ */
 void parse_arguments(int argc, char *argv[], int *encoding_mode, int *decoding_mode, char **input_file, char **output_file, int *segmentation_grid, int *verbose) {
-    /**
-     * @brief Parses command-line arguments
-     * 
-     */
     int opt;
     while ((opt = getopt(argc, argv, "hcui:o:gv")) != -1) {
         switch (opt) {
@@ -59,14 +61,14 @@ void parse_arguments(int argc, char *argv[], int *encoding_mode, int *decoding_m
     }
 }
 
+/**
+ * @brief Validates options specified by user
+ * 
+ * @param encoding_mode Encoder mode flag
+ * @param decoding_mode Decoder mode flag
+ * @param input_file Input file
+ */
 void validate_options(int encoding_mode, int decoding_mode, const char *input_file) {
-    /**
-     * @brief Validates options specified by user
-     * 
-     * @param encoding_mode Encoder mode flag
-     * @param decoding_mode Decoder mode flag
-     * @param input_file Input file
-     */
     if (encoding_mode && decoding_mode) {
         fprintf(stderr, "Erreur: Impossible d'activer l'encodeur et le décodeur en même temps\n");
         exit(1);
@@ -78,39 +80,20 @@ void validate_options(int encoding_mode, int decoding_mode, const char *input_fi
     }
 }
 
+/**
+ * @brief Determines the output file based on the mode.
+ * 
+ * @param encoding_mode Encoder mode flag
+ * @param decoding_mode Decoder mode flag
+ * @param input_file Input file
+ */
 void determine_output_file(int encoding_mode, int decoding_mode, char **output_file) {
-    /**
-     * @brief Determines the output file based on the mode.
-     * 
-     * @param encoding_mode Encoder mode flag
-     * @param decoding_mode Decoder mode flag
-     * @param input_file Input file
-     */
     if (!*output_file) {
         if (encoding_mode) {
             *output_file = "QTC/out.qtc";
         } else if (decoding_mode) {
             *output_file = "PGM/out.pgm";
         }
-    }
-}
-
-/*
-    Fonction DEBUG 
-*/
-void display_info(int verbose, int encoding_mode, const char *input_file, const char *output_file, int segmentation_grid, int nbc, int nbl, int nbg, const unsigned char *image) {
-    if (verbose) {
-        printf("Mode: %s\n", encoding_mode ? "Encodeur" : "Decodeur");
-        printf("Fichier d'entrée: %s\n", input_file);
-        printf("Fichier de sortie: %s\n", output_file);
-        printf("Grille de segmentation: %s\n", segmentation_grid ? "Oui" : "Non");
-        printf("Dimensions : %d %d\n", nbc, nbl);
-        printf("Niveau de Gris : %d\n", nbg);
-        printf("Premiers pixels de l'image :\n");
-        for (int i = 0; i < 20 && i < nbc * nbl; i++) {
-            printf("%d ", image[i]);
-        }
-        printf("\n");
     }
 }
 
@@ -125,7 +108,7 @@ void encode(const char *input_file, const char *output_file, int verbose) {
     int nbc, nbl, nbg;
     
     if (read_pgm_file(input_file, &nbc, &nbl, &nbg, &image) != 1) {
-        fprintf(stderr, "Erreur de lecture du fichier\n");
+        fprintf(stderr, "\033[31mErreur de lecture du fichier\033[0m\n");
         exit(1);
     }
     
@@ -139,24 +122,43 @@ void encode(const char *input_file, const char *output_file, int verbose) {
     }    
     BitStream *bs = init_bit_stream(f);
     write_quadtree_data(f, quadtree, bs, verbose);
-    printf("Compression de %s sauvegardée dans %s\n", input_file, output_file);
+    printf("\033[0mCompression de %s sauvegardée dans %s\n", input_file, output_file);
     close_bit_stream(bs);
     fclose(f);
     free(image);
 }
 
-void decode(const char *input_file, const char *output_file) {
-    /**
-     * @brief Decompresses the provided QTC file into a PGM file
-     * 
-     * @param input_file Compressed QTC file
-     * @param output_file PGM file
-     */
-    printf("Décompression de %s vers %s\n", input_file, output_file);
-    if (lire_fichier_qtc(input_file) != 1) {
-        fprintf(stderr, "Erreur de lecture du fichier\n");
+/**
+ * @brief Decompresses the provided QTC file into a PGM file
+ * 
+ * @param input_file Compressed QTC file
+ * @param output_file PGM file
+ */
+void decode(const char *input_file, const char *output_file, int verbose) {
+    FILE *f = fopen(input_file, "rb");
+    if (!f) {
+        fprintf(stderr, "Erreur d'ouverture de fichier\n");
         exit(1);
     }
+
+    BitStream *bs = init_bit_stream(f);  
+    int n, p;
+    char time_compression[100];
+
+    if (read_qtc_file(input_file, &n, &p, time_compression) != 1) {
+        fprintf(stderr, "\033[31mErreur de lecture du fichier\033[0m\n");
+        fclose(f);
+        exit(1);
+    }   
+    Node *quadtree = rebuild_quadtree(input_file, verbose);
+    if (!quadtree) {
+        fprintf(stderr, "\033[31mErreur de décompression\033[0m\n");
+        close_bit_stream(bs);
+        fclose(f);
+        exit(1);
+    }
+    rebuild_image(quadtree, output_file, input_file, n, time_compression, verbose);
+    printf("Image décompressée sauvegardée dans %s\n", output_file);    
 }
 
 int main(int argc, char *argv[]) {
@@ -174,7 +176,7 @@ int main(int argc, char *argv[]) {
     if (encoding_mode) {
         encode(input_file, output_file, verbose);
     } else if (decoding_mode) {
-        decode(input_file, output_file);
+        decode(input_file, output_file, verbose);
     }
 
     return 0;
