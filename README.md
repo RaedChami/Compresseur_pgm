@@ -16,6 +16,6 @@
 - *Partie 3 :*
   Compression de l'image sans pertes (COMPLETE)
 - *Partie 4 :*
-  Decompression de l'image (EN COURS)
+  Decompression de l'image (COMPLETE)
 - *Partie 5 :*
   Compression de l'image avec pertes
