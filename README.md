@@ -1,21 +1,35 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/LZABp_05)
-#### Sonny AOUCHICHE & Raëd CHAMI
-# Projet : Compression d'image par Quadtree  
+**********
+* README *
+**********
 
-## Guide développeur :  
-**L'éxecution du projet**  
-- La compilation se fait à travers un makefile. Pour éxecuter le projet, donner en argument le nom du fichier PGM à traiter :
-  
-  ```./projet PGM/TEST4x4.pgm```
+@author Raëd CHAMI
 
-**A implémenter :**  
-- *Partie 1 :*
-  Lecture de fichier (COMPLETE)
-- *Partie 2 :*
-  Quadtree (COMPLETE)
-- *Partie 3 :*
-  Compression de l'image sans pertes (COMPLETE)
-- *Partie 4 :*
-  Decompression de l'image (COMPLETE)
-- *Partie 5 :*
-  Compression de l'image avec pertes
+=COMPILATION= :
+La bibliothèque partagée est incluse dans le projet.
+- Pour compiler le projet, écrire les commandes suivantes:
+make lib
+make app
+
+L'exécutable codec du projet sera situé dans le dossier build/ du projet.
+
+=UTILISATION=:
+Plusieurs options de la ligne de commande sont mis à disposition de l'utilisateur, comme demandé dans l'énoncé.
+L'option -h indiquera toutes les options possibles.
+
+*Pour encoder un fichier, utiliser l'option -c.
+Exemple d'utilisation :
+LD_LIBRARY_PATH=build ./build/codec -i PGM/buzz.512.pgm -c
+
+*Pour decoder un fichier, utiliser l'option -u.
+Exemple d'utilisation :
+LD_LIBRARY_PATH=build ./build/codec -i QTC/buzz.512.qtc -u
+
+*Pour renommer le fichier de sortie, utiliser l'option -o.
+Exemple d'utilisation :
+LD_LIBRARY_PATH=build ./build/codec -i QTC/texavery.512.qtc -o PGM/tex.pgm -u
+
+Le mode verbeux est disponible pour la compression et la décompression et affiche diverses informations
+
+Les programmes ont été soigneusement documentés avec l'outil doxygen.
+
+===================================
