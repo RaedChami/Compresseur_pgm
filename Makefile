@@ -1,21 +1,14 @@
-CC = gcc
-CFLAGS = -std=c17 -Wall -Wfatal-errors -I$(INCLUDE_DIR)
-SRC_DIR = src
-INCLUDE_DIR = include
-TARGET = codec
+.PHONY: all lib app clean
 
-SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/treat_pgm_file.c $(SRC_DIR)/quadtree.c $(SRC_DIR)/compress.c $(SRC_DIR)/bit_manipulation.c $(SRC_DIR)/treat_qtc_file.c $(SRC_DIR)/decompress.c
-OBJS = $(SRCS:.c=.o)
+all: lib app
 
-all: $(TARGET)
+lib:
+	$(MAKE) -C src
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $@
-
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-.PHONY: all clean
+app:
+	$(MAKE) -C app
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	$(MAKE) -C src clean
+	$(MAKE) -C app clean
+
